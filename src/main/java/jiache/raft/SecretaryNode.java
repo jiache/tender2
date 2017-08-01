@@ -81,7 +81,11 @@ public class SecretaryNode implements SecretaryServer{
     }
 
     // 增加entry
-    private synchronized void addEntry(Entry entry) {
+    private void addEntry(Entry entry) {
+        while(entry.getLogIndex()!=log.size()){
+//            System.out.println("SectaryNode 86 "+"logIndex:"+entry.getLogIndex()+" logSize:"+log.size());
+            Thread.interrupted();
+        }
         log.add(entry);
     }
 

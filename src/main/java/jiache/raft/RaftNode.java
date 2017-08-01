@@ -93,7 +93,9 @@ public class RaftNode implements RaftServer {
         @Override
         public void put(PutRequest request, StreamObserver<PutResponce> responseObserver) {
             // 加到log中，复制到secretary中，最后等到大部分的follower复制完成则返回
+            // 把entry添加到leader的log中，并给出唯一的logIndex
             Integer logIndex = addLog(request.getKey(), request.getValueJson());
+            addToSecretary(logIndex);
             while(logReplicNum.get(logIndex)<=allNum/2) {
                 Thread.interrupted();
             }
@@ -109,6 +111,7 @@ public class RaftNode implements RaftServer {
         public void get(GetRequest request, StreamObserver<GetResponce> responseObserver) {
             // 加到log中，复制到secretary中，最后等到大部分的follower复制完成则返回
             Integer logIndex = addLog(request.getKey(), null);
+            addToSecretary(logIndex);
             while(logReplicNum.get(logIndex)<=allNum/2) {
                 Thread.interrupted();
             }
@@ -153,12 +156,17 @@ public class RaftNode implements RaftServer {
         logReplicNum.set(replicLogIndex, logReplicNum.get(replicLogIndex)+1);
     }
 
-    // leader中 在put的request传来key,value后，添加日志到leader和secretary中
+    // leader中 在put的request传来key,value后，添加日志到leader
     private synchronized Integer addLog(String key, String value) {
         Integer index = log.size();
         Entry entry = new Entry(key,value,index,term);
         log.add(entry);
         logReplicNum.add(1);
+        return index;
+    }
+    // 添加entry到secretary中
+    private void addToSecretary(Integer logIndex) {
+        Entry entry = log.get(logIndex);
         for(int i=0; i<blockingStubs.size(); ++i) {
             blockingStubs.get(i).addEntries(AddEntriesRequest
                     .newBuilder()
@@ -166,7 +174,6 @@ public class RaftNode implements RaftServer {
                     .setEntryJson(JSON.toJSONString(entry))
                     .build());
         }
-        return index;
     }
 
     private synchronized String commit(Entry entry) {
