@@ -35,6 +35,10 @@ public class RaftNode implements RaftServer {
     public RaftNode() {
     }
 
+    public RaftNode(Address address) {
+        this.address = address;
+    }
+
     @Override
     public void start(Address address) throws IOException, InterruptedException {
         this.address = address;
@@ -52,6 +56,14 @@ public class RaftNode implements RaftServer {
 //            System.out.println("Server shutdown");
 //        }));
         raftServer.awaitTermination();
+    }
+
+    @Override
+    public void start() throws IOException, InterruptedException {
+        if(this.address == null) {
+            throw new RuntimeException("address didn't init");
+        }
+        start(address);
     }
 
     @Override

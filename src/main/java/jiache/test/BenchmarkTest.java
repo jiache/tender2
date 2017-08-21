@@ -1,5 +1,7 @@
-package jiache.core;
+package jiache.test;
 
+import jiache.core.Address;
+import jiache.core.Client;
 import jiache.raft.RaftNode;
 import jiache.raft.RaftServer;
 import jiache.raft.SecretaryNode;
@@ -13,9 +15,9 @@ import java.util.List;
  * Created by jiacheng on 17-8-1.
  */
 public class BenchmarkTest {
-    private static int followerNum = 18;
-    private static int secretaryNum = 2;
-    private static int clientNum = 3;
+    private static int followerNum = 4;
+    private static int secretaryNum = 1;
+    private static int clientNum = 1;
     private static int benchmarkSize = 20000;
     public static void main(String[] args) throws InterruptedException {
         if(args.length>0){

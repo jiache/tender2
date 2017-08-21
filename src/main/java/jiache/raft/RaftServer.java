@@ -10,6 +10,7 @@ import java.util.List;
  */
 public interface RaftServer {
     void start(Address address) throws IOException, InterruptedException;
+    void start() throws IOException, InterruptedException;
     void bootstrap(List<Address> secretaryAddresses, List<Address> followerAddresses);
     void connectLeader(Address address);
 }
