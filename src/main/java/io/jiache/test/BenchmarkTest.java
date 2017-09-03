@@ -1,11 +1,11 @@
-package jiache.test;
+package io.jiache.test;
 
-import jiache.core.Address;
-import jiache.core.Client;
-import jiache.raft.RaftNode;
-import jiache.raft.RaftServer;
-import jiache.raft.SecretaryNode;
-import jiache.raft.SecretaryServer;
+import io.jiache.raft.RaftServer;
+import io.jiache.raft.SecretaryServer;
+import io.jiache.core.Address;
+import io.jiache.core.Client;
+import io.jiache.raft.RaftNode;
+import io.jiache.raft.SecretaryNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -139,7 +139,8 @@ public class BenchmarkTest {
         }
         int remain = all-per*group;
         for(int i=0; i<remain; ++i) {
-            result.set(i, result.get(i)+1);
+            result.set(
+                    i, result.get(i)+1);
         }
         return result;
     }

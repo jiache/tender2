@@ -1,4 +1,4 @@
-package jiache.core;
+package io.jiache.core;
 
 import com.alibaba.fastjson.JSON;
 import io.grpc.ManagedChannel;
@@ -11,11 +11,14 @@ import io.jiache.grpc.*;
 public class Client{
     private RaftServiceGrpc.RaftServiceBlockingStub blockingStub;
 
+    private Address connectTo;
+
     public Client(String leaderIp, int leaderPort) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(leaderIp, leaderPort)
                 .usePlaintext(true)
                 .build();
         blockingStub = RaftServiceGrpc.newBlockingStub(channel);
+        connectTo = new Address(leaderIp, leaderPort);
     }
 
 
@@ -39,5 +42,9 @@ public class Client{
     public <T> T get(String key, Class<T> clazz){
         String json = getJson(key);
         return JSON.parseObject(json,clazz);
+    }
+
+    public Address getConnectTo() {
+        return connectTo;
     }
 }

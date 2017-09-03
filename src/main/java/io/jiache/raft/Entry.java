@@ -1,4 +1,4 @@
-package jiache.raft;
+package io.jiache.raft;
 
 /**
  * Created by jiacheng on 17-7-28.

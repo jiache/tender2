@@ -1,4 +1,4 @@
-package jiache.raft;
+package io.jiache.raft;
 
 import java.util.HashMap;
 import java.util.Map;

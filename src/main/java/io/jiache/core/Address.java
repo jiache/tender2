@@ -1,4 +1,4 @@
-package jiache.core;
+package io.jiache.core;
 
 /**
  * Created by jiacheng on 17-7-28.

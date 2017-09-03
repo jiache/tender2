@@ -1,4 +1,4 @@
-package jiache.raft;
+package io.jiache.raft;
 
 import com.alibaba.fastjson.JSON;
 import io.grpc.ManagedChannel;
@@ -7,7 +7,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.jiache.grpc.*;
-import jiache.core.Address;
+import io.jiache.core.Address;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,11 +21,22 @@ public class SecretaryNode implements SecretaryServer{
     private List<Entry> log;
     private List<Integer> nextIndex;
     private Server secretaryServer;
+    private Address local;
+    private List<Address> followers;
+
+    public SecretaryNode() {
+    }
+
+    public SecretaryNode(Address local, List<Address> followers) {
+        this.local = local;
+        this.followers = followers;
+        committedIndex = -1;
+        log = new ArrayList<>();
+        nextIndex = new ArrayList<>();
+    }
 
     @Override
     public void start(Address address) throws IOException, InterruptedException {
-        committedIndex = -1;
-        log = new ArrayList<>();
         secretaryServer = ServerBuilder.forPort(address.getPort())
                 .addService(new SecretaryServiceImpl())
                 .build()
@@ -39,8 +50,15 @@ public class SecretaryNode implements SecretaryServer{
     }
 
     @Override
+    public void start() throws IOException, InterruptedException {
+        if(local == null) {
+            throw new NullPointerException("local is null");
+        }
+        start(local);
+    }
+
+    @Override
     public void bootstrap(List<Address> followerAddresses) {
-        nextIndex = new ArrayList<>();
         for(int i=0; i<followerAddresses.size(); ++i) {
             nextIndex.add(0);
         }
@@ -65,6 +83,14 @@ public class SecretaryNode implements SecretaryServer{
                 }
             }).start();
         }
+    }
+
+    @Override
+    public void bootstrap() {
+        if(followers == null) {
+            throw new NullPointerException("followers is null");
+        }
+        bootstrap(followers);
     }
 
     private class SecretaryServiceImpl extends SecretaryServiceGrpc.SecretaryServiceImplBase{

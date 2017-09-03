@@ -1,4 +1,4 @@
-package jiache;
+package io.jiache;
 
 import org.junit.Test;
 

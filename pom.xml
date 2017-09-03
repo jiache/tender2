@@ -95,7 +95,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>jiache.test.MultiClient</mainClass>
+              <mainClass>io.jiache.main.ClientMain</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

@@ -1,4 +1,4 @@
-package jiache.raft;
+package io.jiache.raft;
 
 import com.alibaba.fastjson.JSON;
 import io.grpc.ManagedChannel;
@@ -7,12 +7,11 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.jiache.grpc.*;
-import jiache.core.Address;
+import io.jiache.core.Address;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jiacheng on 17-7-31.
@@ -20,6 +19,8 @@ import java.util.Map;
 public class RaftNode implements RaftServer {
     private Address address;
     private Address leaderAddress;
+    private List<Address> followersAddress;
+    private List<Address> secretariesAddress;
     private StateMachine stateMachine;
     private List<Entry> log;
     private List<Integer> logReplicNum;
@@ -39,13 +40,20 @@ public class RaftNode implements RaftServer {
         this.address = address;
     }
 
+    public RaftNode(Address address, Address leaderAddress, List<Address> followersAddress, List<Address> secretariesAddress) {
+        this.address = address;
+        this.leaderAddress = leaderAddress;
+        this.followersAddress = followersAddress;
+        this.secretariesAddress = secretariesAddress;
+        this.address = address;
+        this.stateMachine = StateMachine.newInstance();
+        this.log = new ArrayList<>();
+        this.lastApplied = -1;
+        this.term = 1;
+    }
+
     @Override
     public void start(Address address) throws IOException, InterruptedException {
-        this.address = address;
-        stateMachine = StateMachine.newInstance();
-        log = new ArrayList<>();
-        lastApplied = -1;
-        term = 1;
         raftServer = ServerBuilder.forPort(address.getPort())
                 .addService(new RaftServiceImpl())
                 .build()
@@ -64,6 +72,15 @@ public class RaftNode implements RaftServer {
             throw new RuntimeException("address didn't init");
         }
         start(address);
+    }
+
+    @Override
+    public void initStub() {
+        if(address.equals(leaderAddress)) {
+            bootstrap(secretariesAddress, followersAddress);
+        } else {
+            connectLeader(leaderAddress);
+        }
     }
 
     @Override
@@ -122,12 +139,12 @@ public class RaftNode implements RaftServer {
         @Override
         public void get(GetRequest request, StreamObserver<GetResponce> responseObserver) {
             // 加到log中，复制到secretary中，最后等到大部分的follower复制完成则返回
-            Integer logIndex = addLog(request.getKey(), null);
-            addToSecretary(logIndex);
-            while(logReplicNum.get(logIndex)<=allNum/2) {
-                Thread.interrupted();
-            }
-            String result = commit(log.get(logIndex));
+//            Integer logIndex = addLog(request.getKey(), null);
+//            addToSecretary(logIndex);
+//            while(logReplicNum.get(logIndex)<=allNum/2) {
+//                Thread.interrupted();
+//            }
+            String result = commit(new Entry(request.getKey(), null, 0, 0));
             GetResponce responce = GetResponce.newBuilder()
                     .setValue(result)
                     .build();
@@ -152,7 +169,7 @@ public class RaftNode implements RaftServer {
             for(i=lastApplied+1; i<=committedIndex&&i<log.size(); ++i) {
                 commit(log.get(i));
             }
-            lastApplied = i-1;
+//            lastApplied = i-1;
             responseObserver.onNext(AppendEntriesResponce.newBuilder()
                     .setSuccess(true)
                     .build());
