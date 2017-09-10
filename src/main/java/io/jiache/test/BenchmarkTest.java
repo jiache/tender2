@@ -18,7 +18,7 @@ public class BenchmarkTest {
     private static int followerNum = 4;
     private static int secretaryNum = 1;
     private static int clientNum = 1;
-    private static int benchmarkSize = 20000;
+    private static int benchmarkSize = 500;
     public static void main(String[] args) throws InterruptedException {
         if(args.length>0){
             if(args.length != 4){
@@ -118,7 +118,7 @@ public class BenchmarkTest {
                 }
                 for (int j = 0; j < benchmarkSize; ++j) {
                     String s = client.get(clientIndex+"key" + j, String.class);
-//                    System.out.println("client"+clientIndex+" "+s);
+                    System.out.println("client"+clientIndex+" "+s);
                 }
                 double time = System.currentTimeMillis() - begin;
                 try {

@@ -34,6 +34,10 @@ public class RaftNode implements RaftServer {
     private Server raftServer;
 
     public RaftNode() {
+        this.stateMachine = StateMachine.newInstance();
+        this.log = new ArrayList<>();
+        this.lastApplied = -1;
+        this.term = 1;
     }
 
     public RaftNode(Address address) {
@@ -41,15 +45,12 @@ public class RaftNode implements RaftServer {
     }
 
     public RaftNode(Address address, Address leaderAddress, List<Address> followersAddress, List<Address> secretariesAddress) {
+        this();
         this.address = address;
         this.leaderAddress = leaderAddress;
         this.followersAddress = followersAddress;
         this.secretariesAddress = secretariesAddress;
         this.address = address;
-        this.stateMachine = StateMachine.newInstance();
-        this.log = new ArrayList<>();
-        this.lastApplied = -1;
-        this.term = 1;
     }
 
     @Override
@@ -125,9 +126,9 @@ public class RaftNode implements RaftServer {
             // 把entry添加到leader的log中，并给出唯一的logIndex
             Integer logIndex = addLog(request.getKey(), request.getValueJson());
             addToSecretary(logIndex);
-            while(logReplicNum.get(logIndex)<=allNum/2) {
-                Thread.interrupted();
-            }
+//            while(logReplicNum.get(logIndex)<=allNum/2) {
+//                Thread.interrupted();
+//            }
             String result = commit(log.get(logIndex));
             PutResponce responce = PutResponce.newBuilder()
                     .setSucess(true)
@@ -159,10 +160,10 @@ public class RaftNode implements RaftServer {
             // 添加entry
             if(entry!=null) {
                 appendLog(entry);
-                raftServiceBlockingStub.callBack(CallBackRequest
-                        .newBuilder()
-                        .setReplicLogIndex(entry.getLogIndex())
-                        .build());
+//                raftServiceBlockingStub.callBack(CallBackRequest
+//                        .newBuilder()
+//                        .setReplicLogIndex(entry.getLogIndex())
+//                        .build());
             }
             // 根据committedIndex进行commit
             int i;

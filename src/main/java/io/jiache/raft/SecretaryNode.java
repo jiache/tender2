@@ -20,24 +20,24 @@ public class SecretaryNode implements SecretaryServer{
     private Integer committedIndex;
     private List<Entry> log;
     private List<Integer> nextIndex;
-    private Server secretaryServer;
     private Address local;
     private List<Address> followers;
 
     public SecretaryNode() {
-    }
-
-    public SecretaryNode(Address local, List<Address> followers) {
-        this.local = local;
-        this.followers = followers;
         committedIndex = -1;
         log = new ArrayList<>();
         nextIndex = new ArrayList<>();
     }
 
+    public SecretaryNode(Address local, List<Address> followers) {
+        this();
+        this.local = local;
+        this.followers = followers;
+    }
+
     @Override
     public void start(Address address) throws IOException, InterruptedException {
-        secretaryServer = ServerBuilder.forPort(address.getPort())
+        Server secretaryServer = ServerBuilder.forPort(address.getPort())
                 .addService(new SecretaryServiceImpl())
                 .build()
                 .start();
